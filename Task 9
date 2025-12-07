@@ -1,0 +1,39 @@
+def diagnose(symptoms):
+    if "yellow leaves" in symptoms and "stunted growth" in symptoms:
+        return "Nitrogen Deficiency"
+
+    if "brown spots" in symptoms and "yellow halo" in symptoms:
+        return "Fungal Leaf Spot"
+
+    if "wilting" in symptoms and "wet soil" in symptoms:
+        return "Root Rot"
+
+    if "holes in leaves" in symptoms and "insects present" in symptoms:
+        return "Pest Infestation"
+
+    if "white powder on leaves" in symptoms and "leaf curling" in symptoms:
+        return "Powdery Mildew"
+
+    if "wilting" in symptoms and "wet soil" in symptoms and "leaf yellowing" in symptoms:
+        return "Overwatering"
+
+    if "wilting" in symptoms and "dry soil" in symptoms:
+        return "Underwatering"
+
+    if "brown edges" in symptoms and "scorched leaves" in symptoms:
+        return "Sunburn"
+
+    return "No matching disease found. More data needed."
+
+def main():
+    print("\n🌱Agricultural Expert System ")
+    print("\nEnter plant symptoms separated by commas.")
+    print("Examples: yellow leaves, stunted growth, brown spots, yellow halo, wilting, wet soil, holes in leaves, insects present, white powder on leaves, leaf curling, dry soil, brown edges, scorched leaves\n")
+    user_input = input("Symptoms: ").lower()
+    symptoms = [s.strip() for s in user_input.split(",")]
+
+    diagnosis = diagnose(symptoms)
+    print(f"\n🩺 Diagnosis: {diagnosis}")
+
+if __name__ == "__main__":
+    main()
