@@ -1,0 +1,139 @@
+from collections import deque
+from queue import PriorityQueue
+import time
+
+# --- Maze Definition ---
+maze = [
+    [1, 1, 0, 1, 1, 1, 0, 1, 1, 1],
+    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+    [1, 1, 1, 1, 0, 1, 0, 1, 1, 1],
+    [1, 0, 1, 0, 1, 1, 0, 1, 0, 1],
+    [1, 0, 1, 1, 1, 0, 1, 1, 0, 1],
+    [1, 1, 0, 0, 1, 0, 1, 0, 1, 1],
+    [0, 1, 1, 0, 1, 1, 1, 0, 1, 0],
+    [1, 0, 1, 1, 1, 0, 1, 1, 1, 1],
+    [1, 0, 0, 0, 1, 1, 0, 0, 0, 1],
+    [1, 1, 1, 1, 1, 0, 1, 1, 1, 1]
+]
+
+start = (0, 0)
+goal = (9, 9)
+
+moves = [(-1, 0), (1, 0), (0, -1), (0, 1)] # Up, Down, Left, Right
+
+def bfs_queue(maze, start, goal):
+    queue = deque([(start, [start])])
+    visited = set()
+    steps_explored = 0
+
+    while queue:
+        (x, y), path = queue.popleft()
+        steps_explored += 1
+
+        if (x, y) == goal:
+            return path, steps_explored
+        
+        visited.add((x, y))
+
+        for dx, dy in moves:
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < len(maze) and 0 <= ny < len(maze[0]):
+                if maze[nx][ny] == 1 and (nx, ny) not in visited:
+                    queue.append(((nx, ny), path + [(nx, ny)]))
+
+    return None, steps_explored
+
+def manhattan(a, b):
+    return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+def a_star_priorityqueue(maze, start, goal):
+    pq = PriorityQueue()
+    start_f = manhattan(start, goal)
+    pq.put((start_f, 0, [start]))
+
+    visited = set()
+    steps_explored = 0
+
+    while not pq.empty():
+        f, g, path = pq.get()
+        current = path[-1]
+        steps_explored += 1
+
+        if current == goal:
+            return path, g, steps_explored
+        
+        if current in visited:
+            continue
+        visited.add(current)
+        
+        x, y = current
+        for dx, dy in moves:
+            nx, ny = x + dx, y + dy
+
+            if not (0 <= nx < len(maze) and 0 <= ny < len(maze[0])):
+                continue
+            
+            if maze[nx][ny] == 0:
+                continue
+            
+            if (nx, ny) in visited:
+                continue
+
+            neighbor = (nx, ny)
+            new_g = g + 1
+            new_f = new_g + manhattan(neighbor, goal)
+            
+            pq.put((new_f, new_g, path + [neighbor]))
+
+    return None,None, steps_explored # Adjusted return for consistency
+
+
+def print_maze_with_path(maze, path, title):
+    grid = [row[:] for row in maze]
+    for (r, c) in path:
+        if (r, c) != start and (r, c) != goal:
+            grid[r][c] = '*' 
+    sr, sc = start
+    gr, gc = goal
+    grid[sr][sc] = 'S'
+    grid[gr][gc] = 'E'
+
+    print(f"\n{title} Path:")
+    for row in grid:
+        print(" ".join(str(cell) for cell in row))
+
+
+bfs_start_time = time.time()
+bfs_path, bfs_explored = bfs_queue(maze, start, goal)
+bfs_time = time.time() - bfs_start_time
+
+if bfs_path:
+    print("\nBFS Results:")
+    print_maze_with_path(maze, bfs_path, "BFS")
+    print(f"Path length: {len(bfs_path) - 1}")
+    print(f"Nodes explored: {bfs_explored}")
+    print(f"Execution time: {round(bfs_time, 4)} seconds")
+else:
+    print("\nBFS could not find a path.")
+
+a_start_time = time.time()
+a_path, a_cost, a_explored = a_star_priorityqueue(maze, start, goal)
+a_time = time.time() - a_start_time
+
+if a_path:
+    print("\nA* Results:")
+    print_maze_with_path(maze, a_path, "A*")
+    print(f"Path length (cost): {a_cost}")
+    print(f"Nodes explored: {a_explored}")
+    print(f"Execution time: {round(a_time, 4)} seconds")
+else:
+    print("\nA* could not find a path.")
+
+print("\nSummary:")
+print(f"BFS Path length: {len(bfs_path) - 1 if bfs_path else 'N/A'}")
+print(f"BFS Nodes explored: {bfs_explored}")
+print(f"BFS Time: {round(bfs_time, 4)} seconds")
+
+print(f"A* Path length: {a_cost if a_path else 'N/A'}")
+print(f"A* Nodes explored: {a_explored}")
+print(f"A* Time: {round(a_time, 4)} seconds")
