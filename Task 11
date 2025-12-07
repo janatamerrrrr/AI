@@ -1,0 +1,86 @@
+# ==================================
+# # Load Dataset
+# ==================================
+import pandas as pd
+
+# Load the dataset from CSV
+dataset = "fakenews.csv" 
+df = pd.read_csv(dataset)
+print("✅ Dataset loaded successfully!")
+print(df.head())
+
+# # Data Preprocessing
+# ==================================
+# Strip whitespace from column names and drop missing values
+df.columns = df.columns.str.strip()
+df = df.dropna()
+
+print("\n🧹 After cleaning:")
+print(df.info())
+
+# # Classification Task: Fake News Detection
+# ==========================================
+features = ['text'] # input feature
+target = 'label'    # output label (FAKE / REAL)
+
+X = df[features]
+y = df[target]
+
+print("\n🎯 Features & Target selected:")
+print(X.head())
+print(y.head())
+
+# # Encode Features and Target
+# ==========================================
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.preprocessing import LabelEncoder
+
+# Convert text data to numerical features using TF-IDF
+vectorizer = TfidfVectorizer(stop_words='english', max_features=5000)
+X_encoded = vectorizer.fit_transform(X['text'])
+
+# Encode labels (FAKE / REAL) to 0/1
+label_encoder = LabelEncoder()
+y_encoded = label_encoder.fit_transform(y)
+
+print("\n🔢 Features and labels encoded.")
+print("Encoded feature matrix shape:", X_encoded.shape)
+
+# # Split Data for Training and Testing
+# ==========================================
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X_encoded, y_encoded, test_size=0.2, random_state=42
+)
+
+print("\n📊 Data split done.")
+print("Training samples:", X_train.shape[0])
+print("Testing samples:", X_test.shape[0])
+
+# # Train Decision Tree Classifier
+# ==================================
+from sklearn.tree import DecisionTreeClassifier
+
+model = DecisionTreeClassifier(max_depth=5, random_state=42)
+model.fit(X_train, y_train)
+
+print("\n🌲 Model trained successfully (Decision Tree, max_depth=5).")
+
+# # Evaluate Classifier
+# ==================================
+from sklearn.metrics import accuracy_score, classification_report
+
+# Predict on test set
+y_pred = model.predict(X_test)
+
+# Accuracy
+acc = accuracy_score(y_test, y_pred)
+print("\n📈 Accuracy:", round(acc, 3))
+
+# Detailed Classification Report
+# Use inverse_transform and explicitly convert to strings
+target_names = [str(label) for label in label_encoder.inverse_transform([0, 1])] 
+
+print("\n📜 Detailed Classification Report:")
+print(classification_report(y_test, y_pred, target_names=target_names))
