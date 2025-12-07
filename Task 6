@@ -1,0 +1,29 @@
+!pip install pymdptoolbox
+
+import numpy as np
+from mdptoolbox import mdp
+
+T_left = np.array([
+    [0.8, 0.2, 0.0],
+    [0.7, 0.3, 0.0],
+    [0.0, 0.6, 0.4]
+])
+
+T_right = np.array([
+    [0.6, 0.4, 0.0],
+    [0.0, 0.3, 0.7],
+    [0.0, 0.2, 0.8]
+])
+
+T = [T_left, T_right]
+
+R = np.array([
+    [-1, 0, 10],
+    [-1, 2, 8]
+]).T
+
+vi = mdp.ValueIteration(transitions=T, reward=R, discount=0.9)
+vi.run()
+
+print("✅ Best Policy (0 = Move Left, 1 = Move Right):", vi.policy)
+print("📈 Value Function:", np.round(vi.V, 2))
